@@ -1,0 +1,215 @@
+.container {
+    padding: 5%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    box-sizing: border-box;
+    gap: 2rem;
+    font-size: 1.2em;
+    color: var(--white);
+
+    .title {
+        font-size: 2rem;
+        font-weight: 600;
+        padding: 2rem;
+        position: fixed;
+        top: 0;
+    }
+
+    .time {
+        color: rgb(126, 126, 126);
+        transition: color .2s;
+
+        &[data-recording=true] {
+            color: var(--white);
+        }
+    }
+
+
+    button {
+        box-sizing: content-box;
+        padding: 2rem;
+        height: 5rem;
+        border-radius: 50%;
+        // font-size: 1.5rem;
+        aspect-ratio: 1;
+        cursor: pointer;
+        transition: scale .2s, transform .2s;
+        position: relative;
+        isolation: isolate;
+        border: none;
+        -webkit-tap-highlight-color: transparent;
+
+
+        &:enabled:hover,
+        &:enabled:focus-visible {
+            scale: 1.05;
+            transform: translateY(-5px);
+        }
+
+        &:disabled {
+            cursor: default;
+            opacity: .5;
+        }
+
+        svg {
+            aspect-ratio: 1;
+            fill: var(--gray);
+        }
+
+        &.active::after {
+            --clr1: #f72585;
+            --clr2: #7209b7;
+            --clr3: #3a0ca3;
+            --clr4: #4361ee;
+            --clr5: #4cc9f0;
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgb(131, 58, 180);
+            background: conic-gradient(var(--clr1),
+                    var(--clr2),
+                    var(--clr3),
+                    var(--clr4),
+                    var(--clr5),
+                    var(--clr4),
+                    var(--clr3),
+                    var(--clr2),
+                    var(--clr1),
+                );
+            border-radius: 50%;
+            z-index: -2;
+            filter: blur(10px);
+            animation: anim-gradient 2s linear infinite;
+
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background-color: var(--white);
+            z-index: -1;
+            transition: opacity .2s;
+        }
+
+        &.active::before {
+            opacity: .9;
+        }
+
+        @keyframes anim-gradient {
+
+            from {
+                rotate: 0deg;
+                inset: 0;
+            }
+
+            50% {
+                rotate: 180deg;
+                inset: -.8rem;
+            }
+
+            to {
+                rotate: 360deg;
+                inset: 0;
+            }
+        }
+    }
+
+    .transcription {
+        max-width: min(90svw, 60ch);
+        overflow-wrap: break-word;
+        max-height: 20em;
+        overflow: auto;
+    }
+
+    .github {
+        padding: 2rem;
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        cursor: pointer;
+        transition: opacity .2s, scale .2s;
+        -webkit-tap-highlight-color: transparent;
+        text-decoration: none;
+        color: #7a7a7a;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1rem;
+
+        &:hover,
+        &:focus-visible {
+            opacity: 0.8;
+            scale: 1.1;
+        }
+
+        svg {
+            height: 5rem;
+            aspect-ratio: 1;
+            fill: var(--white);
+        }
+    }
+
+    @media screen and (max-width: 450px),
+    screen and (max-width: 900px) and (orientation:landscape),
+    screen and (max-height: 650px) and (orientation:landscape) {
+        .title {
+            font-size: 1rem;
+        }
+
+        button {
+            height: 3rem;
+            padding: 1rem;
+        }
+
+        .github svg {
+            height: 3rem;
+        }
+    }
+
+
+}
+
+@media screen and (max-width: 900px) and (orientation:landscape),
+screen and (max-height: 650px) and (orientation:landscape) {
+    .container {
+        position: absolute;
+        inset: 0;
+        left: 20%;
+        right: 40%;
+
+        .title {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 1.5rem;
+            rotate: 180deg;
+            position: fixed;
+            width: 10%;
+            text-align: left;
+            left: 0;
+            top: 0;
+            bottom: 20%;
+        }
+
+        .github {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            padding: 2rem;
+
+            span {
+                display: none;
+            }
+        }
+
+        .text {
+            position: fixed;
+            right: 2rem;
+            left: 65%;
+        }
+    }
+}
