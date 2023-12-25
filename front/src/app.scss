@@ -28,26 +28,29 @@
     }
 
 
-    button {
+    @mixin button-hover {
+        transition: scale .2s, transform .2s;
+
+        &:enabled:hover,
+        &:enabled:focus-visible {
+            scale: 1.05;
+            transform: translateY(-5px);
+            cursor: pointer;
+        }
+    }
+
+    .mic-button {
         box-sizing: content-box;
         padding: 2rem;
         height: 5rem;
         border-radius: 50%;
         // font-size: 1.5rem;
         aspect-ratio: 1;
-        cursor: pointer;
-        transition: scale .2s, transform .2s;
         position: relative;
         isolation: isolate;
         border: none;
         -webkit-tap-highlight-color: transparent;
-
-
-        &:enabled:hover,
-        &:enabled:focus-visible {
-            scale: 1.05;
-            transform: translateY(-5px);
-        }
+        @include button-hover();
 
         &:disabled {
             cursor: default;
@@ -59,7 +62,7 @@
             fill: var(--gray);
         }
 
-        &.active::after {
+        &[data-recording=true]::after {
             --clr1: #f72585;
             --clr2: #7209b7;
             --clr3: #3a0ca3;
@@ -96,7 +99,7 @@
             transition: opacity .2s;
         }
 
-        &.active::before {
+        &[data-recording=true]::before {
             opacity: .9;
         }
 
@@ -117,6 +120,17 @@
                 inset: 0;
             }
         }
+    }
+
+    .send-button {
+        padding: .5rem;
+        border-radius: .5rem;
+        font-size: 1.1rem;
+        background-color: transparent;
+        border: none;
+        color: var(--white);
+        @include button-hover();
+        border: 2px solid var(--white);
     }
 
     .transcription {
@@ -161,7 +175,7 @@
             font-size: 1rem;
         }
 
-        button {
+        .mic-button {
             height: 3rem;
             padding: 1rem;
         }

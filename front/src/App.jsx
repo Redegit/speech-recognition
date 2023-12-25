@@ -4,18 +4,18 @@ import GitHub from './GitHub';
 import Mic from './Mic';
 
 const App = () => {
-  const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
-  const audioRef = useRef(null);
+  const [audioSrc, setAudioSrc] = useState(null);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const [result, setResult] = useState(null)
-  const [waitingResponse, setWaitingResponse] = useState(false);
+  const [status, setStatus] = useState("initial");
+  const [requestBody, setRequestBody] = useState({});
 
   useEffect(() => {
     let timer;
 
-    if (recording) {
+    if (status === 'recording') {
       timer = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
       }, 1000);
@@ -24,7 +24,7 @@ const App = () => {
     }
 
     return () => clearInterval(timer);
-  }, [recording]);
+  }, [status]);
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -37,68 +37,72 @@ const App = () => {
     };
 
     mediaRecorder.onstop = async () => {
-      setWaitingResponse(true)
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
       const audioUrl = URL.createObjectURL(audioBlob);
-      audioRef.current.src = audioUrl;
+      setAudioSrc(audioUrl);
       audioChunksRef.current = [];
 
-  
+
       // console.log("Продолжительность аудио: ", );
 
       const formData = new FormData();
       formData.append('audio', audioBlob);
+      setRequestBody(formData);
 
-      try {
-        const response = await fetch('/stt', {
-          method: 'POST',
-          body: formData,
-        });
 
-        const data = await response.json();
-        setResult(data)
-      } catch (error) {
-        setResult({text: "test"})
-        console.error('Error during server request:', error);
-      }
-      setWaitingResponse(false)
+      setStatus('idle')
     };
 
     mediaRecorderRef.current = mediaRecorder;
     mediaRecorder.start();
-    setRecording(true);
+    setStatus('recording');
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && recording) {
+    if (mediaRecorderRef.current && status === 'recording') {
       mediaRecorderRef.current.stop();
-      setRecording(false);
     }
   };
 
+  const sendToServer = async () => {
+    setStatus('waiting');
+    try {
+      const response = await fetch('http://127.0.0.1:8050/stt', {
+        method: 'POST',
+        body: requestBody,
+      });
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      console.error('Error during server request:', error);
+    }
+    setStatus('idle');
+  }
 
   return (
     <div className='container'>
       <div className="title">Распознавание аудио на основе OpenAI Whisper и RuBERT</div>
-      <button className={recording ? 'active' : ''} disabled={waitingResponse} onClick={recording ? stopRecording : startRecording}>
+      <button className='mic-button' data-recording={status === 'recording'} disabled={status === 'waiting'} onClick={status === 'recording' ? stopRecording : startRecording}>
         <Mic />
       </button>
-      <p className='time' data-recording={recording} >{waitingResponse ? "Распознавание речи..." : `Время записи: ${seconds} с.`}</p>
+      {status === 'idle' && <button onClick={sendToServer} className="send-button">{"Отправить >"}</button>}
+
+      <div className='time' data-recording={status === 'recording'} >{status === 'waiting' ? "Распознавание речи..." : `Время записи: ${seconds} с.`}</div>
 
 
-      <div className="audio-player">
-        <audio ref={audioRef} controls />
-      </div>
+      {['idle'].includes(status) && <div className="audio-player">
+        <audio src={audioSrc} controls />
+      </div>}
 
 
-      {result
+      {result && status === 'idle'
         ? <div className="text">
           <div>Язык: {result.language}</div>
           <div className='transcription'>Транскрипция: {result.text}</div>
           <div>Тональность: {result.sentiment}</div>
           <div>Эмоция: {result.emotion}</div>
         </div>
-        : !result && !recording && !waitingResponse && "Нажмите на микрофон, чтобы начать запись"
+        : status === 'initial' && "Нажмите на микрофон, чтобы начать запись"
       }
 
       <GitHub />
