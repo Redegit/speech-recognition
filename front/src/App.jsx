@@ -3,6 +3,9 @@ import "./app.scss"
 import GitHub from './GitHub';
 import Mic from './Mic';
 
+// http://127.0.0.1:8050
+const SERVER_ADDRESS = '' // прописать адрес сервера, для дев-сервера || для билда - пустая строка
+
 const App = () => {
   const [seconds, setSeconds] = useState(0);
   const [audioSrc, setAudioSrc] = useState(null);
@@ -64,8 +67,7 @@ const App = () => {
   const sendToServer = async () => {
     setStatus('waiting');
     try {
-      const server_address = '' // прописать адрес сервера, для дев-сервера || для билда - пустая строка
-      const response = await fetch(`${server_address}/stt`, {
+      const response = await fetch(`${SERVER_ADDRESS}/stt`, {
         method: 'POST',
         body: requestBody,
       });
