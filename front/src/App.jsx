@@ -42,9 +42,6 @@ const App = () => {
       setAudioSrc(audioUrl);
       audioChunksRef.current = [];
 
-
-      // console.log("Продолжительность аудио: ", );
-
       const formData = new FormData();
       formData.append('audio', audioBlob);
       setRequestBody(formData);
@@ -67,11 +64,13 @@ const App = () => {
   const sendToServer = async () => {
     setStatus('waiting');
     try {
-      const response = await fetch('http://127.0.0.1:8050/stt', {
+      const server_address = '' // прописать адрес сервера, для дев-сервера || для билда - пустая строка
+      const response = await fetch(`${server_address}/stt`, {
         method: 'POST',
         body: requestBody,
       });
       const data = await response.json();
+      console.log(data);
       setResult(data);
     } catch (error) {
       console.error('Error during server request:', error);

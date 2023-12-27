@@ -12,21 +12,25 @@ from transformers import HubertForSequenceClassification, Wav2Vec2FeatureExtract
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-CORS(app)  # Разрешаем CORS для всех маршрутов
-# Папка для сохранения загруженных аудиофайлов
+CORS(app)
 audio_uploads_dir = './audio_uploads'
 if not os.path.exists(audio_uploads_dir):
     os.makedirs(audio_uploads_dir)
 
-# Настройка Flask для загрузки файлов
 app.config['UPLOAD_FOLDER'] = audio_uploads_dir
-app.config['ALLOWED_EXTENSIONS'] = {'wav'}
 
-whisper_speech_to_text = whisper.load_model("base")
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+print(f"Текущее устройство {device}")
+
+# Whisper для транскрибации
+whisper_speech_to_text = whisper.load_model("base").to(device)
+
+# RuBERT для распознавания тональности
 sentiment_tokenizer = BertTokenizerFast.from_pretrained('blanchefort/rubert-base-cased-sentiment')
 sentiment_classifier = AutoModelForSequenceClassification.from_pretrained('blanchefort/rubert-base-cased-sentiment',
                                                                           return_dict=True)
 
+# HuBERT для классификации эмоций
 emotion_feature_extractor = Wav2Vec2FeatureExtractor.from_pretrained("facebook/hubert-large-ls960-ft")
 emotion_classifier = HubertForSequenceClassification.from_pretrained(
     "xbgoose/hubert-large-speech-emotion-recognition-russian-dusha-finetuned")
@@ -69,6 +73,11 @@ def rec_emotion(filepath: str) -> str:
 
 @torch.no_grad()
 def predict_sentiment(text):
+    """
+    Функция, использующая RuBERT для распознавания тональности
+    :param text: текст, тональность которого нужно получить
+    :return: тональность (нейтральная, положительная, отрицательная)
+    """
     inputs = sentiment_tokenizer(text, max_length=512, padding=True, truncation=True, return_tensors='pt')
     outputs = sentiment_classifier(**inputs)
     predicted = torch.nn.functional.softmax(outputs.logits, dim=1)
