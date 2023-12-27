@@ -21,3 +21,6 @@ docker run -p 5000:5000 speech-recognition:latest
 npm install
 npm run start
 ```
+
+# Демонстрация
+!["Скриншот работы"](./img/демо.webp)
