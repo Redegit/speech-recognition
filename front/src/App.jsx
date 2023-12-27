@@ -61,6 +61,12 @@ const App = () => {
   const stopRecording = () => {
     if (mediaRecorderRef.current && status === 'recording') {
       mediaRecorderRef.current.stop();
+      const stream = mediaRecorderRef.current.stream;
+
+      if (stream) {
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+      }
     }
   };
 
@@ -76,6 +82,7 @@ const App = () => {
       setResult(data);
     } catch (error) {
       console.error('Error during server request:', error);
+      setResult({text: "ОШИБКА: " + error})
     }
     setStatus('idle');
   }
